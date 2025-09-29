@@ -125,28 +125,20 @@ $(__snyk_bin):
 
 // Semgrep template
 const semgrepTemplate = `# SOURCE: https://github.com/n-h-n/forge/blob/main/internal/component/data/semgrep
-SEMGREP_VERSION ?= 1.75.0
+SEMGREP_VERSION ?= 1.138.0
 SEMGREP = $(realpath $(__semgrep_bin))
 __semgrep_dir = $(TOOLS_DIR)/semgrep/$(SEMGREP_VERSION)
-__semgrep_bin = $(__semgrep_dir)/semgrep
-__semgrep_kernel = $(shell uname -s | tr "[:upper:]" "[:lower:]")
-__semgrep_arch = $(shell uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')
-__semgrep_file = semgrep-$(SEMGREP_VERSION)-$(__semgrep_kernel)-$(__semgrep_arch)
-__semgrep_base_url = https://github.com/returntocorp/semgrep/releases/download/v$(SEMGREP_VERSION)
-__semgrep_bin_url = $(__semgrep_base_url)/$(__semgrep_file)
-__semgrep_checksum_url = $(__semgrep_base_url)/checksums.txt
-.d.semgrep: $(__semgrep_bin)
+__semgrep_bin = $(__semgrep_dir)/bin/semgrep
+__semgrep_venv = $(__semgrep_dir)/venv
+.d.semgrep: $(__semgrep_bin) | .d.python
 .PHONY: .d.semgrep
-$(__semgrep_bin):
-	rm -f $(GLOBAL_TMP_DIR)/$(__semgrep_file) $(GLOBAL_TMP_DIR)/checksums.txt
-	curl -s -L -o $(GLOBAL_TMP_DIR)/$(__semgrep_file) $(__semgrep_bin_url)
-	curl -s -L -o $(GLOBAL_TMP_DIR)/checksums.txt $(__semgrep_checksum_url)
-	cd $(GLOBAL_TMP_DIR) && grep -F $(__semgrep_file) checksums.txt | $(SHA256SUM) -c -
-	chmod u+x $(GLOBAL_TMP_DIR)/$(__semgrep_file)
-	rm -rf $(__semgrep_dir)
-	mkdir -p $(__semgrep_dir)
-	cp $(GLOBAL_TMP_DIR)/$(__semgrep_file) $@
-	rm $(GLOBAL_TMP_DIR)/$(__semgrep_file) $(GLOBAL_TMP_DIR)/checksums.txt
+$(__semgrep_bin): | $(__semgrep_venv)
+	mkdir -p $(__semgrep_dir)/bin
+	$(__semgrep_venv)/bin/pip install semgrep==$(SEMGREP_VERSION)
+	ln -sf $(realpath $(__semgrep_venv))/bin/semgrep $@
+$(__semgrep_venv):
+	$(PYTHON) -m venv $(__semgrep_venv)
+	$(__semgrep_venv)/bin/pip install --upgrade pip
 
 `
 
@@ -273,32 +265,12 @@ $(__gh_bin):
 
 // Python template
 const pythonTemplate = `# SOURCE: https://github.com/n-h-n/forge/blob/main/internal/component/data/python
-PYTHON_VERSION ?= 3.12.7
-PYTHON = $(realpath $(__python_bin))
-__python_dir = $(TOOLS_DIR)/python/$(PYTHON_VERSION)
-__python_bin = $(__python_dir)/bin/python
-__python_kernel = $(shell uname -s | tr "[:upper:]" "[:lower:]")
-__python_arch = $(shell uname -m | sed -e 's/x86_64/amd64/' -e 's/aarch64/arm64/')
-__python_file = Python-$(PYTHON_VERSION).tgz
-__python_base_url = https://www.python.org/ftp/python/$(PYTHON_VERSION)
-__python_bin_url = $(__python_base_url)/$(__python_file)
-__python_checksum_url = $(__python_base_url)/Python-$(PYTHON_VERSION).tgz.sha256
-.d.python: $(__python_bin)
+PYTHON_VERSION ?= system
+PYTHON = $(shell which python3)
+.d.python:
+	@echo "Using system Python: $(PYTHON)"
+	@$(PYTHON) --version
 .PHONY: .d.python
-$(__python_bin):
-	rm -f $(GLOBAL_TMP_DIR)/$(__python_file) $(GLOBAL_TMP_DIR)/$(__python_file).sha256
-	curl -s -L -o $(GLOBAL_TMP_DIR)/$(__python_file) $(__python_bin_url)
-	curl -s -L -o $(GLOBAL_TMP_DIR)/Python-$(PYTHON_VERSION).tgz.sha256 $(__python_checksum_url)
-	cd $(GLOBAL_TMP_DIR) && grep -F $(__python_file) Python-$(PYTHON_VERSION).tgz.sha256 | $(SHA256SUM) -c -
-	rm -rf $(GLOBAL_TMP_DIR)/pythontmp
-	mkdir -p $(GLOBAL_TMP_DIR)/pythontmp
-	tar -xzf $(GLOBAL_TMP_DIR)/$(__python_file) -C $(GLOBAL_TMP_DIR)/pythontmp
-	rm -rf $(__python_dir)
-	mkdir -p $(__python_dir)
-	cd $(GLOBAL_TMP_DIR)/pythontmp/Python-$(PYTHON_VERSION) && \
-		./configure --prefix=$(realpath $(__python_dir)) --enable-optimizations && \
-		make -j$(shell nproc) && make install
-	rm -rf $(GLOBAL_TMP_DIR)/pythontmp $(GLOBAL_TMP_DIR)/$(__python_file)
 
 `
 
