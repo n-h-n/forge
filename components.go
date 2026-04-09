@@ -198,15 +198,20 @@ __npm_kernel = $(shell uname -s | tr "[:upper:]" "[:lower:]")
 __npm_arch = $(shell uname -m | sed -e 's/x86_64/x64/' -e 's/aarch64/arm64/')
 __npm_file = npm-$(NPM_VERSION).tgz
 __npm_base_url = https://registry.npmjs.org/npm/-/npm-$(NPM_VERSION).tgz
+__npm_tgz = $(abspath $(GLOBAL_TMP_DIR)/$(__npm_file))
+__npm_unpack = $(GLOBAL_TMP_DIR)/npm-unpack-$(NPM_VERSION)
 .d.npm: $(__npm_bin) | .d.nodejs
 .PHONY: .d.npm
 $(__npm_bin): | .d.nodejs
-	rm -f $(GLOBAL_TMP_DIR)/$(__npm_file)
-	curl -s -L -o $(GLOBAL_TMP_DIR)/$(__npm_file) $(__npm_base_url)
+	rm -f $(__npm_tgz)
+	curl -s -L -o $(__npm_tgz) $(__npm_base_url)
+	rm -rf $(__npm_unpack)
+	mkdir -p $(__npm_unpack)
+	tar -xzf $(__npm_tgz) -C $(__npm_unpack)
 	rm -rf $(__npm_dir)
 	mkdir -p $(__npm_dir)
-	cd $(__npm_dir) && $(NODE) $(GLOBAL_TMP_DIR)/$(__npm_file) --prefix=$(realpath $(__npm_dir))
-	rm $(GLOBAL_TMP_DIR)/$(__npm_file)
+	cd $(__npm_unpack)/package && $(NODE) bin/npm-cli.js install -g --prefix=$(abspath $(__npm_dir)) $(__npm_tgz)
+	rm -rf $(__npm_unpack) $(__npm_tgz)
 
 `
 
