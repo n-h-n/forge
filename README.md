@@ -19,8 +19,8 @@ Recreated as a copy of a tool that a former colleague and friend Tadej Borovšak
 4. **Semgrep** (1.75.0) - Static analysis security scanner
 5. **goimports** (v0.29.0) - Go import formatter
 6. **Python** (3.12.7) - Python toolchain
-7. **Node.js** (v20.18.0) - Node.js runtime
-8. **npm** (10.8.2) - npm package manager
+7. **Node.js** (v26.4.0) - Node.js runtime
+8. **npm** (11.17.0) - npm package manager
 9. **GitHub CLI** (v2.65.0) - GitHub command line tool
 10. **Python Black** (24.10.0) - Python code formatter
 

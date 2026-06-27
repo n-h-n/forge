@@ -164,7 +164,7 @@ $(__goimports_bin): | .d.go
 
 // Node.js template
 const nodejsTemplate = `# SOURCE: https://github.com/n-h-n/forge/blob/main/internal/component/data/nodejs
-NODEJS_VERSION ?= v20.18.0
+NODEJS_VERSION ?= v26.4.0
 NODE = $(realpath $(__nodejs_bin))
 __nodejs_dir = $(TOOLS_DIR)/nodejs/$(NODEJS_VERSION)
 __nodejs_bin = $(__nodejs_dir)/bin/node
@@ -190,7 +190,7 @@ $(__nodejs_bin):
 
 // npm template
 const npmTemplate = `# SOURCE: https://github.com/n-h-n/forge/blob/main/internal/component/data/npm
-NPM_VERSION ?= 10.8.2
+NPM_VERSION ?= 11.17.0
 NPM = $(realpath $(__npm_bin))
 __npm_dir = $(TOOLS_DIR)/npm/$(NPM_VERSION)
 __npm_bin = $(__npm_dir)/bin/npm

@@ -57,13 +57,13 @@ var components = []Component{
 	},
 	{
 		Name:        "nodejs",
-		Version:     "v20.18.0",
+		Version:     "v26.4.0",
 		Description: "Node.js runtime",
 		Template:    nodejsTemplate,
 	},
 	{
 		Name:        "npm",
-		Version:     "10.8.2",
+		Version:     "11.17.0",
 		Description: "npm package manager",
 		Template:    npmTemplate,
 	},
