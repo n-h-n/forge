@@ -2,7 +2,7 @@ package main
 
 // Go template
 const goTemplate = `# SOURCE: https://github.com/n-h-n/forge/blob/main/internal/component/data/go
-GO_VERSION ?= go1.25.1
+GO_VERSION ?= go1.26.5
 GO = env GOENV=$(GO_ENV) GOROOT=$(GO_ROOT) $(GO_ROOT)/bin/go
 go_dep_loc = $(shell $(GO) mod download $(1) && $(GO) list -m -f "{{.Dir}}" $(1))
 go_nhn_dep_loc = $(call go_dep_loc,github.com/n-h-n/$(1))

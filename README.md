@@ -13,7 +13,7 @@ Recreated as a copy of a tool that a former colleague and friend Tadej Borovšak
 
 ## Components Managed
 
-1. **Go** (go1.25.1) - Go toolchain
+1. **Go** (go1.26.5) - Go toolchain
 2. **jq** (jq-1.7.1) - JSON processor
 3. **Snyk** (v1.1295.0) - Security vulnerability scanner
 4. **Semgrep** (1.75.0) - Static analysis security scanner

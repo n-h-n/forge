@@ -21,7 +21,7 @@ type Component struct {
 var components = []Component{
 	{
 		Name:        "go",
-		Version:     "go1.25.1",
+		Version:     "go1.26.5",
 		Description: "Go toolchain",
 		Template:    goTemplate,
 	},
