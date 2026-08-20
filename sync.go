@@ -39,7 +39,7 @@ var components = []Component{
 	},
 	{
 		Name:        "semgrep",
-		Version:     "1.75.0",
+		Version:     "1.138.0",
 		Description: "Static analysis security scanner",
 		Template:    semgrepTemplate,
 	},
@@ -48,6 +48,12 @@ var components = []Component{
 		Version:     "v0.29.0",
 		Description: "Go import formatter",
 		Template:    goimportsTemplate,
+	},
+	{
+		Name:        "uv",
+		Version:     "0.12.5",
+		Description: "Python package and toolchain manager",
+		Template:    uvTemplate,
 	},
 	{
 		Name:        "python",

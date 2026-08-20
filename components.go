@@ -128,17 +128,15 @@ const semgrepTemplate = `# SOURCE: https://github.com/n-h-n/forge/blob/main/inte
 SEMGREP_VERSION ?= 1.138.0
 SEMGREP = $(realpath $(__semgrep_bin))
 __semgrep_dir = $(TOOLS_DIR)/semgrep/$(SEMGREP_VERSION)
-__semgrep_bin = $(__semgrep_dir)/bin/semgrep
-__semgrep_venv = $(__semgrep_dir)/venv
+__semgrep_bin = $(__semgrep_dir)/semgrep
 .d.semgrep: $(__semgrep_bin) | .d.python
 .PHONY: .d.semgrep
-$(__semgrep_bin): | $(__semgrep_venv)
-	mkdir -p $(__semgrep_dir)/bin
-	$(__semgrep_venv)/bin/pip install semgrep==$(SEMGREP_VERSION)
-	ln -sf $(realpath $(__semgrep_venv))/bin/semgrep $@
-$(__semgrep_venv):
-	$(PYTHON) -m venv $(__semgrep_venv)
-	$(__semgrep_venv)/bin/pip install --upgrade pip
+$(__semgrep_bin): | .d.python
+	mkdir -p $(__semgrep_dir)
+	env \
+	  UV_TOOL_DIR="$(abspath $(__semgrep_dir)/env)" \
+	  UV_TOOL_BIN_DIR="$(abspath $(__semgrep_dir))" \
+	  $(UV) tool install --force --python $(PYTHON_VERSION) semgrep==$(SEMGREP_VERSION)
 
 `
 
@@ -268,14 +266,57 @@ $(__gh_bin):
 
 `
 
+// uv template
+const uvTemplate = `# SOURCE: https://github.com/n-h-n/forge/blob/main/internal/component/data/uv
+UV_VERSION ?= 0.12.5
+UV = \
+  env \
+  UV_CACHE_DIR="$(abspath $(__uv_cache))" \
+  UV_PYTHON_INSTALL_DIR="$(abspath $(__uv_python_dir))" \
+  UV_MANAGED_PYTHON=1 \
+  $(realpath $(__uv_bin))
+__uv_dir = $(TOOLS_DIR)/uv/$(UV_VERSION)
+__uv_bin = $(__uv_dir)/uv
+__uv_cache = $(GLOBAL_CACHE_DIR)/uv
+__uv_python_dir = $(TOOLS_DIR)/python
+__uv_kernel = $(shell uname -s | tr "[:upper:]" "[:lower:]")
+__uv_arch = $(shell uname -m | sed -e 's/arm64/aarch64/')
+ifeq ($(__uv_kernel),darwin)
+  __uv_target = $(__uv_arch)-apple-darwin
+else
+  __uv_target = $(__uv_arch)-unknown-linux-gnu
+endif
+__uv_file = uv-$(__uv_target).tar.gz
+__uv_base_url = https://github.com/astral-sh/uv/releases/download/$(UV_VERSION)
+.d.uv: $(__uv_bin)
+.PHONY: .d.uv
+$(__uv_cache):
+	mkdir -p $@
+$(__uv_bin): | $(__uv_cache)
+	rm -f $(GLOBAL_TMP_DIR)/$(__uv_file) $(GLOBAL_TMP_DIR)/$(__uv_file).sha256
+	curl -s -L -o $(GLOBAL_TMP_DIR)/$(__uv_file) $(__uv_base_url)/$(__uv_file)
+	curl -s -L -o $(GLOBAL_TMP_DIR)/$(__uv_file).sha256 $(__uv_base_url)/$(__uv_file).sha256
+	cd $(GLOBAL_TMP_DIR) && $(SHA256SUM) -c $(__uv_file).sha256
+	rm -rf $(__uv_dir)
+	mkdir -p $(__uv_dir)
+	tar -xzf $(GLOBAL_TMP_DIR)/$(__uv_file) -C $(__uv_dir) --strip-components=1
+	chmod a+x $(__uv_bin)
+	rm -f $(GLOBAL_TMP_DIR)/$(__uv_file) $(GLOBAL_TMP_DIR)/$(__uv_file).sha256
+
+`
+
 // Python template
 const pythonTemplate = `# SOURCE: https://github.com/n-h-n/forge/blob/main/internal/component/data/python
-PYTHON_VERSION ?= system
-PYTHON = $(shell which python3)
-.d.python:
-	@echo "Using system Python: $(PYTHON)"
-	@$(PYTHON) --version
+PYTHON_VERSION ?= 3.12.7
+PYTHON = $(realpath $(__python_bin))
+__python_dir = $(TOOLS_DIR)/python/$(PYTHON_VERSION)
+__python_bin = $(__python_dir)/python
+.d.python: $(__python_bin)
 .PHONY: .d.python
+$(__python_bin): | $(__uv_bin)
+	mkdir -p $(@D)
+	$(UV) python install --no-bin $(PYTHON_VERSION)
+	ln -sfn $$($(UV) python find --managed-python --no-project $(PYTHON_VERSION)) $@
 
 `
 
@@ -285,15 +326,13 @@ BLACK_VERSION ?= 24.10.0
 BLACK = $(realpath $(__black_bin))
 __black_dir = $(TOOLS_DIR)/black/$(BLACK_VERSION)
 __black_bin = $(__black_dir)/black
-__black_venv = $(__black_dir)/venv
 .d.black: $(__black_bin) | .d.python
 .PHONY: .d.black
-$(__black_bin): | $(__black_venv)
+$(__black_bin): | .d.python
 	mkdir -p $(__black_dir)
-	$(__black_venv)/bin/pip install black==$(BLACK_VERSION)
-	ln -sf $(__black_venv)/bin/black $@
-$(__black_venv):
-	$(PYTHON) -m venv $(__black_venv)
-	$(__black_venv)/bin/pip install --upgrade pip
+	env \
+	  UV_TOOL_DIR="$(abspath $(__black_dir)/env)" \
+	  UV_TOOL_BIN_DIR="$(abspath $(__black_dir))" \
+	  $(UV) tool install --force --python $(PYTHON_VERSION) black==$(BLACK_VERSION)
 
 `

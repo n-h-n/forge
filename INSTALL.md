@@ -91,12 +91,15 @@ $(NPM) run build
 $(NPM) test
 ```
 
-### Using Python and Python Black
+### Using uv, Python, and Python Black
 
-Once forge is installed, you can use Python and Python Black:
+Forge pins `uv` and uses it to install a managed CPython, then to install Black and Semgrep (instead of system `python3` + `pip`).
 
 ```bash
-# Install Python
+# Install uv (also pulled in by Python)
+make .d.uv
+
+# Install Python 3.12.7 via uv
 make .d.python
 
 # Install Black (depends on Python)
